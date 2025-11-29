@@ -38,11 +38,10 @@ def softmax_loss_naive(W, X, y, reg):
         p /= p.sum()  # normalize
         logp = np.log(p)
         loss -= logp[y[i]]  # negative log probability is the lo
-        for j in range(num_classes):
-            if  y[j]==1:
-                dW[:,j]+= (p[j]-1)*X[i]
-            else:
-                dW[:,j]+= p[j]*X[i]
+        loss -= logp[y[i]]  # negative log probability is the loss
+        #############################################################################
+        p[y[i]] -= 1  # 对中间变量得分的梯度进行修改
+        dW += np.outer(X[i], p)  # 链式求导，计算梯度
     # normalized hinge loss plus regularization
     loss = loss / num_train + reg * np.sum(W * W)
 
@@ -54,6 +53,7 @@ def softmax_loss_naive(W, X, y, reg):
     # loss is being computed. As a result you may need to modify some of the    #
     # code above to compute the gradient.                                       #
     #############################################################################
+    dW = dW/num_train + 2*reg*W
     return loss, dW
 
 
@@ -77,8 +77,9 @@ def softmax_loss_vectorized(W, X, y, reg):
     scores-= np.max(scores,axis = 1,keepdims =True)
     p = np.exp(scores)
     p = p/np.sum(p,axis = 1,keepdims =True)
-    loss = -y.T.dot(np.log(p)).sum()
-    loss = loss + reg*np.sum(W*W)
+    logp = np.log(p)
+    loss = -np.sum(logp[np.arange(num_train), y]) # 很关键，记住这个技巧
+    loss = loss / num_train + reg * np.sum(W * W)
     #############################################################################
     # TODO:                                                                     #
     # Implement a vectorized version of the gradient for the softmax            #
@@ -88,21 +89,9 @@ def softmax_loss_vectorized(W, X, y, reg):
     # to reuse some of the intermediate values that you used to compute the     #
     # loss.                                                                     #
     #############################################################################
-    dF = p.copy() 
     
-    # 在正确类别对应的位置 (i, y[i]) 上减去 1
-    # np.arange(num_train) 是 [0, 1, ..., N-1]
-    dF[np.arange(num_train), y] -= 1
-    
-    # 2. 计算 dW (Loss w.r.t W): dW = X^T @ dF
-    # X^T 形状为 (D, N), dF 形状为 (N, C), 结果 dW 形状为 (D, C)
-    dW = X.T.dot(dF)
-    
-    # 3. 平均化 (除以 N)
-    dW /= num_train
-    
-    # 4. 正则化梯度
-    dW += 2 * reg * W
-
+    p[np.arange(num_train), y] -= 1 # 很关键，记住这个技巧
+    dW = X.T.dot(p)  # (D,N)(N,C)=(D,C)
+    dW = dW / num_train + 2 * reg * W
 
     return loss, dW
