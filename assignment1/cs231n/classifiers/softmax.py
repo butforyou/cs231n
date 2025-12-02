@@ -37,7 +37,6 @@ def softmax_loss_naive(W, X, y, reg):
         p = np.exp(scores)
         p /= p.sum()  # normalize
         logp = np.log(p)
-        loss -= logp[y[i]]  # negative log probability is the lo
         loss -= logp[y[i]]  # negative log probability is the loss
         #############################################################################
         p[y[i]] -= 1  # 对中间变量得分的梯度进行修改
