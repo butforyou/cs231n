@@ -61,39 +61,35 @@ class CaptioningTransformer(nn.Module):
             module.weight.data.fill_(1.0)
 
     def forward(self, features, captions):
-        """
-        Given image features and caption tokens, return a distribution over the
-        possible tokens for each timestep. Note that since the entire sequence
-        of captions is provided all at once, we mask out future timesteps.
+     """
+    Given image features and caption tokens, return a distribution over the
+    possible tokens for each timestep. Note that since the entire sequence
+    of captions is provided all at once, we mask out future timesteps.
 
-        Inputs:
-         - features: image features, of shape (N, D)
-         - captions: ground truth captions, of shape (N, T)
+    Inputs:
+     - features: image features, of shape (N, D)
+     - captions: ground truth captions, of shape (N, T)
 
-        Returns:
-         - scores: score for each token at each timestep, of shape (N, T, V)
-        """
-        N, T = captions.shape
-        # Create a placeholder, to be overwritten by your code below.
-        scores = torch.empty((N, T, self.vocab_size))
-        ############################################################################
-        # TODO: Implement the forward function for CaptionTransformer.             #
-        # A few hints:                                                             #
-        #  1) You first have to embed your caption and add positional              #
-        #     encoding. You then have to project the image features into the same  #
-        #     dimensions.                                                          #
-        #  2) You have to prepare a mask (tgt_mask) for masking out the future     #
-        #     timesteps in captions. torch.tril() function might help in preparing #
-        #     this mask.                                                           #
-        #  3) Finally, apply the decoder features on the text & image embeddings   #
-        #     along with the tgt_mask. Project the output to scores per token      #
-        ############################################################################
+    Returns:
+     - scores: score for each token at each timestep, of shape (N, T, V)
+     """
+     N, T = captions.shape
+    
+    ############################################################################
+    # TODO: Implement the forward function for CaptionTransformer.             #
+    ############################################################################
+     trans_features = self.visual_projection(features)
+     trans_captions = self.embedding(captions)
+     trans_features = trans_features.unsqueeze(1)
+     posit_captions = self.positional_encoding(trans_captions)
+     tgt_mask = torch.tril(torch.ones(T,T,device = posit_captions.device))
+     decoder_out = self.transformer(tgt = posit_captions,memory = trans_features,tgt_mask=tgt_mask)
+     scores = self.output(decoder_out)
+    ############################################################################
+    #                             END OF YOUR CODE                             #
+    ############################################################################
 
-        ############################################################################
-        #                             END OF YOUR CODE                             #
-        ############################################################################
-
-        return scores
+     return scores
 
     def sample(self, features, max_length=30):
         """
@@ -240,7 +236,12 @@ class VisionTransformer(nn.Module):
         #    You may find torch.mean useful.                                      #
         # 5. Feed it through a linear layer to produce class logits.              #
         ############################################################################
-
+        x = self.patch_embed(x)
+        x = self.positional_encoding(x)
+        x = self.transformer(x)
+        x = torch.mean(x,dim = 1)
+        x = self.head(x)
+        logits = x
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################

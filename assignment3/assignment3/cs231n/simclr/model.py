@@ -6,7 +6,7 @@ from torchvision.models.resnet import resnet50
 
 class Model(nn.Module):
     def __init__(self, feature_dim=128):
-        super(Model, self).__init__()
+        super().__init__()
 
         self.f = []
         for name, module in resnet50().named_children():
@@ -25,3 +25,4 @@ class Model(nn.Module):
         feature = torch.flatten(x, start_dim=1)
         out = self.g(feature)
         return F.normalize(feature, dim=-1), F.normalize(out, dim=-1)
+        
