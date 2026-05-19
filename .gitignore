@@ -1,6 +1,18 @@
-# Large dataset files (>50MB) - excluded from git
-coco_captioning/train2014_vgg16_fc7.h5
-coco_captioning/train2014_vgg16_fc7_pca.h5
-coco_captioning/val2014_vgg16_fc7.h5
-coco_captioning/val2014_vgg16_fc7_pca.h5
-pretrained_model/pretrained_simclr_model.pth
+# Large dataset/model files (excluded from git — keep locally only)
+*.h5
+*.pth
+*.npz
+*.pt
+*.tar.gz
+
+# Keep smaller files that are under GitHub's 100MB limit
+!coco_captioning/coco2014_captions.h5
+!**/emoji_data.npz
+!**/text_embeddings.pt
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Claude Code settings (local only)
+.claude/
