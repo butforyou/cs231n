@@ -1,0 +1,6 @@
+# Large dataset files (>50MB) - excluded from git
+coco_captioning/train2014_vgg16_fc7.h5
+coco_captioning/train2014_vgg16_fc7_pca.h5
+coco_captioning/val2014_vgg16_fc7.h5
+coco_captioning/val2014_vgg16_fc7_pca.h5
+pretrained_model/pretrained_simclr_model.pth
